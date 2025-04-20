@@ -1,6 +1,6 @@
 # Web Requests
 
--# By AFancyDog
+###By AFancyDog
 
 The Web Requests mod adds one command, `/request`, which contains the two sub-commands `get` and `post`
 
