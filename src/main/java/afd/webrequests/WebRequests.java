@@ -47,8 +47,7 @@ public class WebRequests implements ModInitializer {
 				false);
 		try {
 			HttpRequest.Builder builder = HttpRequest.newBuilder()
-					.setHeader("User-Agent",
-							"Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
+					.setHeader("User-Agent","Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
 					.GET()
 					.uri(new URI(url));
 			// "Header: content goes here:::X-Other-header: some stuff" splits into two
