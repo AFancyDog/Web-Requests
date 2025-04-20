@@ -1,6 +1,5 @@
 package afd.webrequests;
 
-
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
@@ -13,9 +12,7 @@ import com.mojang.brigadier.context.CommandContext;
 
 import java.net.URI;
 import java.net.http.*;
-
-
-
+import java.net.http.HttpResponse.BodyHandlers;
 
 public class WebRequests implements ModInitializer {
 	public static final String MOD_ID = "web-requests";
@@ -32,31 +29,46 @@ public class WebRequests implements ModInitializer {
 		// Proceed with mild caution.
 		HttpClient httpClient = HttpClient.newHttpClient();
 		LOGGER.info("Loaded Web Requests Mod");
-		
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("request")
-		.then(literal("get").then(argument("URL", StringArgumentType.string()).then(argument("headers", StringArgumentType.string()).executes(WebRequests::getRequest))))
-		.then(literal("post").executes(context -> {context.getSource().sendFeedback(()-> Text.literal("Called /request with post"),false);
-	  		return 1;
-	}))));
+
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess,
+				environment) -> dispatcher.register(literal("request")
+						.then(literal("get").then(argument("URL", StringArgumentType.string()).then(
+								argument("headers", StringArgumentType.string()).executes(WebRequests::getRequest))))
+						.then(literal("post").executes(context -> {
+							context.getSource().sendFeedback(() -> Text.literal("Called /request with post"), false);
+							return 1;
+						}))));
 	}
 
 	public static int getRequest(CommandContext<ServerCommandSource> context) {
 		String url = StringArgumentType.getString(context, "URL");
 		String headers = StringArgumentType.getString(context, "headers");
-		context.getSource().sendFeedback(() -> Text.literal("Called /request with get and value: %s".formatted(url)), false);
-		try { 
-		HttpRequest request = HttpRequest.newBuilder()
-			.setHeader("User-Agent","Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
-			.GET()
-			.headers()
-			.uri(new URI(url)).build();
-			
+		context.getSource().sendFeedback(() -> Text.literal("Called /request with get and value: %s".formatted(url)),
+				false);
+		try {
+			HttpRequest.Builder builder = HttpRequest.newBuilder()
+					.setHeader("User-Agent",
+							"Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
+					.GET()
+					.uri(new URI(url));
+			// "Header: content goes here:::X-Other-header: some stuff" splits into two
+			// headers
+			String[] header_list = headers.split(":::");
+			for (String s : header_list) {
+				String[] kv = s.split(":", 2);
+				builder.header(kv[0], kv[1]);
+			}
+			HttpRequest request = builder.build();
+			HttpResponse<String> response = HttpClient.newBuilder()
+					.build()
+					.send(request, BodyHandlers.ofString());
+			LOGGER.info("Response is %s".formatted(response.statusCode()));
+
 		} catch (Exception error) {
 			LOGGER.error("Get request failed with exception: %s".formatted(error));
 
 		}
 		return 1;
-	  
+
 	}
 }
-
