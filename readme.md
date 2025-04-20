@@ -20,7 +20,7 @@ A string _that should be contained in quotation marks ("")_
 
 ### headers
 
-headers are formatted like so: `key1:value1:::key2:value2`, triple semicolons are the equivalent of a comma
+headers are formatted like so: `key1:value1:::key2:value2`, triple colons separate the headers
 
 ### body
 
