@@ -28,29 +28,31 @@ public class WebRequests implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		@SuppressWarnings("unused")
-        HttpClient httpClient = HttpClient.newHttpClient();
+		HttpClient httpClient = HttpClient.newHttpClient();
 		LOGGER.info("Loaded Web Requests Mod");
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess,
 				environment) -> dispatcher.register(literal("request")
-						.then(literal("get").then(argument("URL", StringArgumentType.string()).then(
-								argument("headers", StringArgumentType.string()).executes(WebRequests::getRequest))))
+						.then(literal("get")
+								.then(argument("URL", StringArgumentType.string())
+										.then(argument("headers", StringArgumentType.string())
+												.executes(WebRequests::getRequest))))
+
 						.then(literal("post")
-						.then(argument("URL",StringArgumentType.string())
-						.then(argument("headers",StringArgumentType.string()))
-						.then(argument("body",StringArgumentType.string())))
-						.executes(WebRequests::postRequest))));
-						
-					};
-	
+								.then(argument("URL", StringArgumentType.string())
+										.then(argument("headers", StringArgumentType.string())
+												.then(argument("body", StringArgumentType.string())
+														.executes(WebRequests::postRequest)))))));
 
+	};
 
-	public static int postRequest(CommandContext<ServerCommandSource> context){
+	public static int postRequest(CommandContext<ServerCommandSource> context) {
 		String url = StringArgumentType.getString(context, "URL");
 		String headers = StringArgumentType.getString(context, "headers");
-		String body = StringArgumentType.getString(context,"body");
+		String body = StringArgumentType.getString(context, "body");
 		try {
 			HttpRequest.Builder builder = HttpRequest.newBuilder()
-					.setHeader("User-Agent","Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
+					.setHeader("User-Agent",
+							"Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
 					.POST(HttpRequest.BodyPublishers.ofString(body))
 					.uri(new URI(url));
 			// "Header: content goes here:::X-Other-header: some stuff" splits into two
@@ -69,24 +71,18 @@ public class WebRequests implements ModInitializer {
 		} catch (Exception error) {
 			LOGGER.error("Get request failed with exception: %s".formatted(error));
 		}
-			
-
-
-
 
 		return 1;
 	}
 
-
-
-
 	public static int getRequest(CommandContext<ServerCommandSource> context) {
 		String url = StringArgumentType.getString(context, "URL");
 		String headers = StringArgumentType.getString(context, "headers");
-		
+
 		try {
 			HttpRequest.Builder builder = HttpRequest.newBuilder()
-					.setHeader("User-Agent","Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
+					.setHeader("User-Agent",
+							"Minecraft Fabric Web Requests mod by AFancyDog [https://github.com/AFancyDog/Web-Requests]")
 					.GET()
 					.uri(new URI(url));
 			// "Header: content goes here:::X-Other-header: some stuff" splits into two
@@ -100,7 +96,7 @@ public class WebRequests implements ModInitializer {
 			HttpResponse<String> response = HttpClient.newBuilder()
 					.build()
 					.send(request, BodyHandlers.ofString());
-			context.getSource().sendFeedback(() -> Text.literal("Sent a get request to %s".formatted(url)),false);
+			context.getSource().sendFeedback(() -> Text.literal("Sent a get request to %s".formatted(url)), false);
 			LOGGER.info("Response from %s".formatted(url) + "is %s".formatted(response.statusCode()));
 			return response.statusCode();
 		} catch (Exception error) {
